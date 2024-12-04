@@ -22,10 +22,11 @@ from scipy import stats
 from matplotlib import colors
 from datetime import datetime
 
-from quantjourney.data.data_connector_new import DataConnector
+# QuantJourney modules
+from quantjourney.data.data_connector import DataConnector
+from quantjourney.logging import logger
 
-
-async def fetch_market_data(eod_connector):
+async def fetch_market_data(eod):
     """
     Fetch market data using the EodConnector for key indices and ETFs.
     """
@@ -44,7 +45,7 @@ async def fetch_market_data(eod_connector):
         print(f"Fetching {name} data...")
         try:
             # Fetch OHLCV data for each ticker
-            df_list = await eod_connector.async_get_ohlcv(
+            df_list = await eod.async_get_ohlcv(
                 tickers=[info["ticker"]],
                 exchanges=[info["exchange"]],
                 granularity="d",
@@ -83,7 +84,6 @@ async def fetch_market_data(eod_connector):
     else:
         print("No market data was fetched.")
         return pd.DataFrame()
-
 
 async def fetch_jolts_data(fred):
     """
@@ -181,7 +181,6 @@ def create_correlation_analysis(jolts_data, market_data):
     plt.title('JOLTS Sectors vs Market Indicators Correlation Matrix')
     plt.tight_layout(pad=2, rect=[0.2, 0, 1, 1])  # Adjust `rect` to move the left margin
     plt.show()
-
 
 def create_sector_relative_strength(jolts_data, market_data):
     """
@@ -314,22 +313,19 @@ def create_table_plot(data):
     plt.tight_layout()
     plt.show()
 
-
 async def main():
 
-    from quantjourney.data.data_connector import DataConnector
-
+    # Getting DataConnector to get access to connectors (FRED, EOD)
     dc = DataConnector()
     fred = dc.fred
     eod = dc.eod
-
 
     jolts_data = await fetch_jolts_data(fred)
     market_data = await fetch_market_data(eod)
 
     if not market_data.empty and not jolts_data.empty:
-        # create_main_plots(jolts_data)
-        # create_table_plot(jolts_data)
+        create_main_plots(jolts_data)
+        create_table_plot(jolts_data)
         create_correlation_analysis(jolts_data, market_data)
         sector_rs = create_sector_relative_strength(jolts_data, market_data)
         print(sector_rs)
