@@ -775,7 +775,7 @@ async def run_unit_test(unit_test: UnitTests):
 			initial_capital=10000,
 			backtest_name="my_strategy",
 			load_data=False,
-			generate_reports=True
+			generate_reports=True,
 			generate_plots=False
 		)
 		await my_strategy.run_simulation()
